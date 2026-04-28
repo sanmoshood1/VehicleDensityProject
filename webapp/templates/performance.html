@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}Model Performance{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .page-hero {
+    background: linear-gradient(135deg, #0f2133, #0d1b2a);
+    border-bottom: 1px solid rgba(13,148,136,0.2);
+    padding: 40px 32px 36px;
+  }
+  .page-hero-inner { max-width:1200px; margin:0 auto; }
+  .page-hero h1 {
+    font-family:'Rajdhani',sans-serif; font-size:1.9rem;
+    font-weight:700; color:var(--white); margin-bottom:6px;
+  }
+  .page-hero p { font-size:0.88rem; color:var(--text2); }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 14px; margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: var(--navy2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 20px 16px; text-align:center;
+  }
+
+  .metric-val {
+    font-family:'Rajdhani',sans-serif;
+    font-size:2.2rem; font-weight:700;
+    color:var(--white); line-height:1;
+  }
+
+  .metric-unit {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.7rem; color:var(--text2);
+    letter-spacing:0.08em; text-transform:uppercase;
+    margin-top:4px;
+  }
+
+  .metric-label {
+    font-size:0.75rem; color:var(--text2);
+    margin-top:6px; line-height:1.4;
+  }
+
+  .metric-model {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.65rem; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase;
+    margin-top:8px; padding:3px 8px;
+    border-radius:4px; display:inline-block;
+  }
+
+  .model-dt { background:rgba(59,130,246,0.15); color:#60a5fa; }
+  .model-rf { background:rgba(239,68,68,0.15); color:#f87171; }
+
+  .chart-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+  .chart-grid-1 { margin-bottom:24px; }
+
+  .chart-card {
+    background:var(--navy2); border:1px solid rgba(255,255,255,0.08);
+    border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+  }
+
+  .chart-header { padding:16px 20px 12px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .chart-header h3 {
+    font-family:'Rajdhani',sans-serif; font-size:0.88rem; font-weight:700;
+    letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--white); margin-bottom:4px;
+  }
+  .chart-header p { font-size:0.76rem; color:var(--text2); line-height:1.5; }
+  .chart-body { padding:16px; }
+  .chart-body img { width:100%; border-radius:8px; display:block; }
+  .chart-caption { padding:10px 20px 14px; font-size:0.72rem; color:var(--text2); font-style:italic; text-align:center; border-top:1px solid rgba(255,255,255,0.04); }
+
+  /* Comparison table */
+  .perf-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+  .perf-table th {
+    background:#2E4057; color:white;
+    font-family:'Rajdhani',sans-serif; font-size:0.75rem; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase;
+    padding:12px 16px; text-align:left;
+  }
+  .perf-table td { padding:11px 16px; border-bottom:1px solid rgba(255,255,255,0.06); color:var(--text); }
+  .perf-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+  .perf-table .winner { color:var(--green); font-weight:600; }
+  .perf-table .loser  { color:var(--text2); }
+
+  .insight-box {
+    background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.2);
+    border-radius:8px; padding:14px 16px; margin-top:12px;
+    font-size:0.8rem; color:var(--text2); line-height:1.65;
+  }
+  .insight-box strong { color:var(--teal2); }
+
+  @media(max-width:768px) {
+    .metrics-grid { grid-template-columns:repeat(2,1fr); }
+    .chart-grid-2 { grid-template-columns:1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>🎯 Model Performance</h1>
+    <p>Full technical evaluation of the Decision Tree and Random Forest classifiers — accuracy, confusion matrices, feature importance, and cross-validation results.</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <!-- KPI metrics -->
+  <div class="section-label" style="margin-bottom:14px;">Performance at a Glance</div>
+  <div class="metrics-grid">
+    <div class="metric-card" style="border-top:3px solid #60a5fa;">
+      <div class="metric-val">97.75<span style="font-size:1rem">%</span></div>
+      <div class="metric-unit">Accuracy</div>
+      <div class="metric-label">Test Set Performance</div>
+      <span class="metric-model model-dt">Decision Tree</span>
+    </div>
+    <div class="metric-card" style="border-top:3px solid #f87171;">
+      <div class="metric-val">97.50<span style="font-size:1rem">%</span></div>
+      <div class="metric-unit">Accuracy</div>
+      <div class="metric-label">Test Set Performance</div>
+      <span class="metric-model model-rf">Random Forest</span>
+    </div>
+    <div class="metric-card" style="border-top:3px solid var(--green);">
+      <div class="metric-val">96.92<span style="font-size:1rem">%</span></div>
+      <div class="metric-unit">CV Accuracy</div>
+      <div class="metric-label">5-Fold Cross Validation</div>
+      <span class="metric-model model-rf">Random Forest</span>
+    </div>
+    <div class="metric-card" style="border-top:3px solid var(--gold);">
+      <div class="metric-val">9,638</div>
+      <div class="metric-unit">Test Records</div>
+      <div class="metric-label">20% held-out evaluation set</div>
+      <span class="metric-model" style="background:rgba(245,158,11,0.15);color:var(--gold);">Both Models</span>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <div class="card" style="margin-bottom:28px;">
+    <div class="card-title">📋 Full Metrics Comparison</div>
+    <table class="perf-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Decision Tree</th>
+          <th>Random Forest</th>
+          <th>Better Model</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Test Set Accuracy</td>
+          <td class="winner">97.75%</td>
+          <td class="loser">97.50%</td>
+          <td>Decision Tree</td>
+        </tr>
+        <tr>
+          <td>Macro Precision</td>
+          <td class="winner">97.74%</td>
+          <td class="loser">97.50%</td>
+          <td>Decision Tree</td>
+        </tr>
+        <tr>
+          <td>Macro Recall</td>
+          <td class="winner">97.75%</td>
+          <td class="loser">97.50%</td>
+          <td>Decision Tree</td>
+        </tr>
+        <tr>
+          <td>Macro F1-Score</td>
+          <td class="winner">97.74%</td>
+          <td class="loser">97.50%</td>
+          <td>Decision Tree</td>
+        </tr>
+        <tr>
+          <td>CV Accuracy — Mean</td>
+          <td class="loser">96.14%</td>
+          <td class="winner">96.92%</td>
+          <td>Random Forest</td>
+        </tr>
+        <tr>
+          <td>CV Accuracy — Std Dev</td>
+          <td class="loser">± 0.52%</td>
+          <td class="winner">± 0.38%</td>
+          <td>Random Forest</td>
+        </tr>
+        <tr>
+          <td>Training Set Size</td>
+          <td>38,549</td>
+          <td>38,549</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Test Set Size</td>
+          <td>9,638</td>
+          <td>9,638</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>Selected for Deployment</strong></td>
+          <td>—</td>
+          <td class="winner">✅ Yes</td>
+          <td>Greater CV stability</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-box" style="margin-bottom:32px;">
+    <strong>Why Random Forest was selected:</strong> Although the Decision Tree achieved marginally
+    higher test accuracy (97.75% vs 97.50%), the Random Forest demonstrates superior cross-validation
+    stability (96.92% ± 0.38% vs 96.14% ± 0.52%), indicating more consistent generalisation across
+    different data partitions. The Random Forest is used as the primary model in the integrated system.
+  </div>
+
+  <!-- Confusion Matrices -->
+  <div class="section-label" style="margin-bottom:12px;">Confusion Matrices</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.2 — Normalised Confusion Matrices</h3>
+        <p>Decision Tree (left) vs Random Forest (right). Values show the proportion of correctly and incorrectly classified instances per density class.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step2_Confusion_Matrices.png" alt="Confusion Matrices">
+      </div>
+      <div class="chart-caption">Figure 4.2: Normalised Confusion Matrices — Decision Tree and Random Forest — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <!-- Performance Comparison + CV -->
+  <div class="chart-grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.3 — Performance Comparison</h3>
+        <p>Bar chart comparing Accuracy, Precision, Recall, and F1-Score for both models.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step2_Performance_Comparison.png" alt="Performance Comparison">
+      </div>
+      <div class="chart-caption">Figure 4.3: Model Performance Comparison</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.4 — Cross-Validation</h3>
+        <p>5-fold cross-validation accuracy per fold, with mean accuracy dashed lines for each model.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step2_CrossValidation.png" alt="Cross Validation">
+      </div>
+      <div class="chart-caption">Figure 4.4: 5-Fold Cross-Validation Accuracy</div>
+    </div>
+  </div>
+
+  <!-- Feature Importance -->
+  <div class="section-label" style="margin-top:12px; margin-bottom:12px;">Feature Importance Analysis</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.5 — Random Forest Feature Importance Rankings</h3>
+        <p>Percentage contribution of each input feature to the Random Forest model's overall classification accuracy.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step2_Feature_Importance.png" alt="Feature Importance">
+      </div>
+      <div class="chart-caption">Figure 4.5: Random Forest Feature Importance Rankings — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <strong>Key Finding:</strong> Vehicle Count and the engineered Density Index are the two most
+    influential features, confirming the value of the feature engineering approach adopted in this
+    study. Temporal features — Hour of Day and Peak Hour Indicator — rank 4th and 5th respectively,
+    consistent with the well-documented temporal regularity of urban traffic patterns in the literature.
+  </div>
+
+</div>
+{% endblock %}

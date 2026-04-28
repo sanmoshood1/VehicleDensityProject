@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Density & Route Optimiser — FUOYE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0d1b2a;
+      --navy2:   #1b2d3f;
+      --teal:    #0d9488;
+      --teal2:   #14b8a6;
+      --gold:    #f59e0b;
+      --light:   #f0f4f8;
+      --white:   #ffffff;
+      --text:    #cbd5e1;
+      --text2:   #94a3b8;
+      --green:   #10b981;
+      --amber:   #f59e0b;
+      --red:     #ef4444;
+      --radius:  12px;
+      --shadow:  0 4px 24px rgba(0,0,0,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background grid pattern ──────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(13,148,136,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13,148,136,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    header {
+      position: relative; z-index: 10;
+      background: linear-gradient(135deg, var(--navy2) 0%, #0f2133 100%);
+      border-bottom: 1px solid rgba(13,148,136,0.3);
+      padding: 0;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--teal), var(--teal2));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.4);
+    }
+
+    .header-text h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+
+    .header-text p {
+      font-size: 0.82rem;
+      color: var(--teal2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      background: rgba(13,148,136,0.15);
+      border: 1px solid rgba(13,148,136,0.4);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.78rem;
+      color: var(--teal2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── Main layout ──────────────────────────────────────── */
+    main {
+      position: relative; z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── Cards ────────────────────────────────────────────── */
+    .card {
+      background: var(--navy2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* ── Form ─────────────────────────────────────────────── */
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: var(--white);
+      font-family: 'Source Serif 4', serif;
+      font-size: 0.92rem;
+      padding: 11px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(13,148,136,0.2);
+    }
+
+    select option { background: var(--navy2); }
+
+    /* Time row */
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .time-display {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--teal2);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    /* Peak indicator */
+    .peak-indicator {
+      display: none;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: var(--amber);
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    /* Submit button */
+    .btn-query {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--teal), var(--teal2));
+      border: none;
+      border-radius: 10px;
+      color: var(--white);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.35);
+      margin-top: 8px;
+    }
+
+    .btn-query:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,0.45); }
+    .btn-query:active { transform: translateY(0); }
+    .btn-query:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Network summary mini-stats */
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .mini-stat {
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .mini-stat .val {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .mini-stat .lbl {
+      font-size: 0.68rem;
+      color: var(--text2);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .val-low    { color: var(--green); }
+    .val-medium { color: var(--amber); }
+    .val-high   { color: var(--red);   }
+
+    /* ── Results Panel ────────────────────────────────────── */
+    .results-panel { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Placeholder state */
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      color: var(--text2);
+      text-align: center;
+      gap: 16px;
+    }
+
+    .placeholder .icon { font-size: 3.5rem; opacity: 0.3; }
+    .placeholder p { font-size: 0.9rem; max-width: 280px; line-height: 1.6; }
+
+    /* Loading */
+    .loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(13,148,136,0.2);
+      border-top-color: var(--teal2);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading p {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      text-transform: uppercase;
+    }
+
+    /* Error */
+    .error-box {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      padding: 20px;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* Route result card */
+    .route-card {
+      display: none;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .route-header {
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .route-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .congestion-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: white;
+    }
+
+    /* Best route */
+    .route-card.best .route-header { background: rgba(16,185,129,0.12); border-bottom: 1px solid rgba(16,185,129,0.2); }
+    .route-card.best .route-label { color: var(--green); }
+
+    /* Alt route */
+    .route-card.alt .route-header { background: rgba(245,158,11,0.08); border-bottom: 1px solid rgba(245,158,11,0.15); }
+    .route-card.alt .route-label { color: var(--amber); }
+
+    .route-body {
+      background: var(--navy2);
+      padding: 20px 22px;
+    }
+
+    /* Path display */
+    .path-display {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .path-node {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-size: 0.82rem;
+      color: var(--white);
+      white-space: nowrap;
+    }
+
+    .path-node.origin, .path-node.dest {
+      background: rgba(13,148,136,0.2);
+      border-color: rgba(13,148,136,0.4);
+      color: var(--teal2);
+      font-weight: 600;
+    }
+
+    .path-arrow {
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat-item {
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-unit {
+      font-size: 0.65rem;
+      color: var(--text2);
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stat-lbl {
+      font-size: 0.7rem;
+      color: var(--text2);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Density breakdown */
+    .density-bar {
+      display: flex;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 14px;
+      gap: 2px;
+    }
+
+    .density-bar-seg { border-radius: 2px; transition: width 0.4s ease; }
+    .db-low    { background: var(--green); }
+    .db-medium { background: var(--amber); }
+    .db-high   { background: var(--red);   }
+
+    .density-legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .dl-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: var(--text2);
+    }
+
+    .dl-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Journey summary bar */
+    .journey-bar {
+      display: none;
+      background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(13,148,136,0.03));
+      border: 1px solid rgba(13,148,136,0.2);
+      border-radius: var(--radius);
+      padding: 16px 22px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .journey-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .journey-endpoint {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .journey-endpoint strong {
+      display: block;
+      color: var(--white);
+      font-size: 1rem;
+      margin-top: 2px;
+    }
+
+    .journey-arrow {
+      font-size: 1.5rem;
+      color: var(--teal2);
+    }
+
+    .journey-time-badge {
+      font-family: 'Rajdhani', sans-serif;
+      background: rgba(13,148,136,0.15);
+      border: 1px solid rgba(13,148,136,0.35);
+      border-radius: 8px;
+      padding: 8px 18px;
+      text-align: center;
+    }
+
+    .journey-time-badge .jt-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--teal2);
+      line-height: 1;
+    }
+
+    .journey-time-badge .jt-lbl {
+      font-size: 0.65rem;
+      color: var(--text2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── About section ────────────────────────────────────── */
+    .about-strip {
+      margin-top: 40px;
+      padding: 20px 28px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .about-strip p {
+      font-size: 0.78rem;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .about-strip strong { color: var(--text); }
+
+    .model-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .tag {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .tag-teal  { color: var(--teal2); border-color: rgba(13,148,136,0.4); background: rgba(13,148,136,0.08); }
+    .tag-gold  { color: var(--gold);  border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+    .tag-white { color: var(--text);  border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .header-badge { display: none; }
+      .stats-row { grid-template-columns: repeat(3,1fr); }
+    }
+
+    @media (max-width: 480px) {
+      main { padding: 24px 16px 60px; }
+      .card { padding: 20px; }
+      .header-inner { padding: 20px; }
+      .header-text h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo-icon">🚦</div>
+    <div class="header-text">
+      <h1>Vehicle Density & Route Optimiser</h1>
+      <p>Federal University Oye-Ekiti &nbsp;·&nbsp; B.Sc. Computer Science &nbsp;·&nbsp; 2026</p>
+    </div>
+    <div class="header-badge">ML-Powered &nbsp;·&nbsp; Dijkstra Routing</div>
+  </div>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<main>
+  <div class="layout">
+
+    <!-- ── Query Form ──────────────────────────────────────────────────────── -->
+    <div>
+      <div class="card">
+        <div class="card-title">🗺 Route Query</div>
+
+        <div class="form-group">
+          <label>Source Road</label>
+          <select id="origin">
+            <option value="">— Select starting point —</option>
+            {% for key, name in roads.items() %}
+            <option value="{{ key }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Destination Road</label>
+          <select id="destination">
+            <option value="">— Select destination —</option>
+            {% for key, name in roads.items() %}
+            <option value="{{ key }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Current Time</label>
+          <div class="time-row">
+            <input type="number" id="hour" min="0" max="23" value="8"
+                   placeholder="Hour (0–23)" oninput="updateTimeDisplay()">
+            <div class="time-display" id="timeDisplay">08:00</div>
+          </div>
+          <div class="peak-indicator" id="peakIndicator">
+            ⚠ Peak Hour — Expect Higher Congestion
+          </div>
+        </div>
+
+        <button class="btn-query" id="queryBtn" onclick="submitQuery()">
+          Find Best Route →
+        </button>
+
+        <!-- Network mini stats (shown after query) -->
+        <div class="mini-stats" id="miniStats" style="display:none;">
+          <div class="mini-stat">
+            <div class="val val-low" id="statLow">—</div>
+            <div class="lbl">Low Roads</div>
+          </div>
+          <div class="mini-stat">
+            <div class="val val-medium" id="statMed">—</div>
+            <div class="lbl">Medium Roads</div>
+          </div>
+          <div class="mini-stat">
+            <div class="val val-high" id="statHigh">—</div>
+            <div class="lbl">High Roads</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info card -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title">ℹ System Info</div>
+        <div style="font-size:0.82rem; line-height:1.7; color:var(--text2);">
+          <p>This system uses a <strong style="color:var(--text)">Random Forest</strong> machine
+          learning model (97.5% accuracy) to predict vehicle density on each road segment,
+          then applies <strong style="color:var(--text)">Dijkstra's Algorithm</strong> with
+          density-weighted edges to find the optimal congestion-aware route.</p>
+          <br>
+          <p><strong style="color:var(--text)">Density Levels:</strong></p>
+          <p>🟢 <strong style="color:var(--green)">Low</strong> — Free flow, 60 km/h</p>
+          <p>🟡 <strong style="color:var(--amber)">Medium</strong> — Moderate, 35 km/h</p>
+          <p>🔴 <strong style="color:var(--red)">High</strong> — Congested, 15 km/h</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Results Panel ───────────────────────────────────────────────────── -->
+    <div class="results-panel">
+
+      <!-- Journey summary bar -->
+      <div class="journey-bar" id="journeyBar">
+        <div class="journey-bar-inner">
+          <div class="journey-endpoint">
+            <span>From</span>
+            <strong id="jbOrigin">—</strong>
+          </div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-endpoint">
+            <span>To</span>
+            <strong id="jbDest">—</strong>
+          </div>
+          <div class="journey-time-badge">
+            <div class="jt-val" id="jbTime">—</div>
+            <div class="jt-lbl">Best Time (mins)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder -->
+      <div class="card placeholder" id="placeholder">
+        <div class="icon">🗺</div>
+        <p>Select a source road, destination, and current time, then click <strong>Find Best Route</strong> to see ML-optimised routing results.</p>
+      </div>
+
+      <!-- Loading -->
+      <div class="card loading" id="loading">
+        <div class="spinner"></div>
+        <p>Predicting density &amp; computing route…</p>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" id="errorBox"></div>
+
+      <!-- Best Route Card -->
+      <div class="route-card best card" id="bestCard">
+        <div class="route-header">
+          <span class="route-label">✅ Best Route (ML-Optimised)</span>
+          <span class="congestion-badge" id="bestBadge"></span>
+        </div>
+        <div class="route-body">
+          <div class="path-display" id="bestPath"></div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val" id="bestDist">—</div>
+              <div class="stat-unit">km</div>
+              <div class="stat-lbl">Distance</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="bestTime">—</div>
+              <div class="stat-unit">mins</div>
+              <div class="stat-lbl">Est. Travel Time</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="bestStops">—</div>
+              <div class="stat-unit">stops</div>
+              <div class="stat-lbl">Intersections</div>
+            </div>
+          </div>
+          <div class="density-bar" id="bestDensityBar">
+            <div class="density-bar-seg db-low"    id="bestBarLow"></div>
+            <div class="density-bar-seg db-medium" id="bestBarMed"></div>
+            <div class="density-bar-seg db-high"   id="bestBarHigh"></div>
+          </div>
+          <div class="density-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:var(--green)"></div>Low: <span id="bestDLow">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div>Medium: <span id="bestDMed">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--red)"></div>High: <span id="bestDHigh">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alternative Route Card -->
+      <div class="route-card alt card" id="altCard">
+        <div class="route-header">
+          <span class="route-label">⚠ Alternative Route</span>
+          <span class="congestion-badge" id="altBadge"></span>
+        </div>
+        <div class="route-body">
+          <div class="path-display" id="altPath"></div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val" id="altDist">—</div>
+              <div class="stat-unit">km</div>
+              <div class="stat-lbl">Distance</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="altTime">—</div>
+              <div class="stat-unit">mins</div>
+              <div class="stat-lbl">Est. Travel Time</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="altStops">—</div>
+              <div class="stat-unit">stops</div>
+              <div class="stat-lbl">Intersections</div>
+            </div>
+          </div>
+          <div class="density-bar" id="altDensityBar">
+            <div class="density-bar-seg db-low"    id="altBarLow"></div>
+            <div class="density-bar-seg db-medium" id="altBarMed"></div>
+            <div class="density-bar-seg db-high"   id="altBarHigh"></div>
+          </div>
+          <div class="density-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:var(--green)"></div>Low: <span id="altDLow">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div>Medium: <span id="altDMed">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--red)"></div>High: <span id="altDHigh">—</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /results-panel -->
+  </div><!-- /layout -->
+
+  <!-- About strip -->
+  <div class="about-strip">
+    <p>
+      <strong>Sanusi Moshood Olanrewaju</strong> &nbsp;·&nbsp;
+      FTP/CSC/25/01116478 &nbsp;·&nbsp;
+      Supervisor: Mr. Onadokun Isaac Olawale &nbsp;·&nbsp;
+      Department of Computer Science, FUOYE &nbsp;·&nbsp; 2026
+    </p>
+    <div class="model-tags">
+      <span class="tag tag-teal">Random Forest</span>
+      <span class="tag tag-gold">Dijkstra's Algorithm</span>
+      <span class="tag tag-white">97.5% Accuracy</span>
+      <span class="tag tag-white">48,187 Records</span>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── JavaScript ─────────────────────────────────────────────────────────── -->
+<script>
+  function updateTimeDisplay() {
+    const h = parseInt(document.getElementById('hour').value) || 0;
+    const clamped = Math.max(0, Math.min(23, h));
+    document.getElementById('timeDisplay').textContent =
+      String(clamped).padStart(2,'0') + ':00';
+    const isPeak = (clamped >= 7 && clamped <= 9) || (clamped >= 16 && clamped <= 19);
+    document.getElementById('peakIndicator').style.display = isPeak ? 'block' : 'none';
+  }
+
+  function buildPath(pathNames, origin, dest) {
+    const container = document.createElement('div');
+    container.className = 'path-display';
+    pathNames.forEach((name, i) => {
+      const node = document.createElement('span');
+      node.className = 'path-node' + (i === 0 ? ' origin' : i === pathNames.length-1 ? ' dest' : '');
+      node.textContent = name;
+      container.appendChild(node);
+      if (i < pathNames.length - 1) {
+        const arr = document.createElement('span');
+        arr.className = 'path-arrow';
+        arr.textContent = '→';
+        container.appendChild(arr);
+      }
+    });
+    return container;
+  }
+
+  function setCongestionBadge(el, level) {
+    const colours = {
+      'Low':    '#10b981',
+      'Medium': '#f59e0b',
+      'High':   '#ef4444',
+    };
+    el.textContent = level + ' Congestion';
+    el.style.background = colours[level] || '#94a3b8';
+  }
+
+  function setDensityBar(prefix, dens, total) {
+    const t = total || 1;
+    document.getElementById(prefix+'BarLow').style.width  = (dens.Low/t*100)+'%';
+    document.getElementById(prefix+'BarMed').style.width  = (dens.Medium/t*100)+'%';
+    document.getElementById(prefix+'BarHigh').style.width = (dens.High/t*100)+'%';
+    document.getElementById(prefix+'DLow').textContent   = dens.Low   + ' seg';
+    document.getElementById(prefix+'DMed').textContent   = dens.Medium+ ' seg';
+    document.getElementById(prefix+'DHigh').textContent  = dens.High  + ' seg';
+  }
+
+  function showState(state) {
+    document.getElementById('placeholder').style.display = state === 'placeholder' ? 'flex' : 'none';
+    document.getElementById('loading').style.display     = state === 'loading'     ? 'flex' : 'none';
+    document.getElementById('errorBox').style.display    = state === 'error'       ? 'block': 'none';
+    document.getElementById('bestCard').style.display    = state === 'result'      ? 'block': 'none';
+    document.getElementById('journeyBar').style.display  = state === 'result'      ? 'block': 'none';
+  }
+
+  async function submitQuery() {
+    const origin = document.getElementById('origin').value;
+    const dest   = document.getElementById('destination').value;
+    const hour   = parseInt(document.getElementById('hour').value) || 8;
+    const btn    = document.getElementById('queryBtn');
+
+    if (!origin) { alert('Please select a source road.'); return; }
+    if (!dest)   { alert('Please select a destination road.'); return; }
+    if (origin === dest) { alert('Source and destination must be different.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Computing…';
+    showState('loading');
+    document.getElementById('altCard').style.display  = 'none';
+    document.getElementById('miniStats').style.display = 'none';
+
+    try {
+      const res  = await fetch('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origin, destination: dest, hour }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        document.getElementById('errorBox').textContent = data.error || 'An unexpected error occurred.';
+        showState('error');
+        return;
+      }
+
+      const r = data.result;
+
+      // Journey bar
+      document.getElementById('jbOrigin').textContent = r.origin_name;
+      document.getElementById('jbDest').textContent   = r.dest_name;
+      document.getElementById('jbTime').textContent   = r.best.time_mins;
+
+      // Best route
+      const bestPathEl = document.getElementById('bestPath');
+      bestPathEl.innerHTML = '';
+      bestPathEl.appendChild(buildPath(r.best.path_names));
+      setCongestionBadge(document.getElementById('bestBadge'), r.best.congestion);
+      document.getElementById('bestDist').textContent  = r.best.distance;
+      document.getElementById('bestTime').textContent  = r.best.time_mins;
+      document.getElementById('bestStops').textContent = r.best.path.length - 2;
+      setDensityBar('best', r.best.density, r.best.path.length - 1);
+
+      showState('result');
+
+      // Alternative route
+      if (r.alternative) {
+        const altPathEl = document.getElementById('altPath');
+        altPathEl.innerHTML = '';
+        altPathEl.appendChild(buildPath(r.alternative.path_names));
+        setCongestionBadge(document.getElementById('altBadge'), r.alternative.congestion);
+        document.getElementById('altDist').textContent  = r.alternative.distance;
+        document.getElementById('altTime').textContent  = r.alternative.time_mins;
+        document.getElementById('altStops').textContent = r.alternative.path.length - 2;
+        setDensityBar('alt', r.alternative.density, r.alternative.path.length - 1);
+        document.getElementById('altCard').style.display = 'block';
+      }
+
+      // Network mini stats
+      document.getElementById('statLow').textContent  = r.network_density.Low;
+      document.getElementById('statMed').textContent  = r.network_density.Medium;
+      document.getElementById('statHigh').textContent = r.network_density.High;
+      document.getElementById('miniStats').style.display = 'grid';
+
+    } catch(err) {
+      document.getElementById('errorBox').textContent = 'Network error: ' + err.message;
+      showState('error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Find Best Route →';
+    }
+  }
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitQuery();
+  });
+
+  // Initialise time display
+  updateTimeDisplay();
+</script>
+</body>
+</html>

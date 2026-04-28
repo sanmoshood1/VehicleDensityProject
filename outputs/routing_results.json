@@ -1,0 +1,53 @@
+[
+  {
+    "scenario": "Scenario 1: North-West to East",
+    "origin": "A",
+    "dest": "L",
+    "static_path": "A \u2192 E \u2192 F \u2192 G \u2192 L",
+    "static_dist": 8.3,
+    "static_low": 2,
+    "static_med": 1,
+    "static_high": 1,
+    "aware_path": "A \u2192 E \u2192 F \u2192 G \u2192 M \u2192 L",
+    "aware_dist": 9.8,
+    "aware_low": 3,
+    "aware_med": 2,
+    "aware_high": 0,
+    "high_avoided": 1,
+    "dist_overhead_pct": 18.1
+  },
+  {
+    "scenario": "Scenario 2: South-West to North-East",
+    "origin": "K",
+    "dest": "M",
+    "static_path": "K \u2192 H \u2192 I \u2192 F \u2192 G \u2192 M",
+    "static_dist": 9.0,
+    "static_low": 3,
+    "static_med": 0,
+    "static_high": 2,
+    "aware_path": "K \u2192 H \u2192 E \u2192 F \u2192 G \u2192 M",
+    "aware_dist": 9.3,
+    "aware_low": 4,
+    "aware_med": 0,
+    "aware_high": 1,
+    "high_avoided": 1,
+    "dist_overhead_pct": 3.3
+  },
+  {
+    "scenario": "Scenario 3: North-West to South-East",
+    "origin": "A",
+    "dest": "N",
+    "static_path": "A \u2192 K \u2192 O \u2192 N",
+    "static_dist": 8.2,
+    "static_low": 1,
+    "static_med": 2,
+    "static_high": 0,
+    "aware_path": "A \u2192 K \u2192 O \u2192 N",
+    "aware_dist": 8.2,
+    "aware_low": 1,
+    "aware_med": 2,
+    "aware_high": 0,
+    "high_avoided": 0,
+    "dist_overhead_pct": 0.0
+  }
+]

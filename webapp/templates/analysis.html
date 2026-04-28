@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Traffic Analysis{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .page-hero {
+    background: linear-gradient(135deg, #0f2133, #0d1b2a);
+    border-bottom: 1px solid rgba(13,148,136,0.2);
+    padding: 40px 32px 36px;
+  }
+  .page-hero-inner { max-width:1200px; margin:0 auto; }
+  .page-hero h1 {
+    font-family:'Rajdhani',sans-serif; font-size:1.9rem;
+    font-weight:700; color:var(--white); margin-bottom:6px;
+  }
+  .page-hero p { font-size:0.88rem; color:var(--text2); }
+
+  .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 24px;
+  }
+
+  .chart-grid-1 {
+    margin-bottom: 24px;
+  }
+
+  .chart-card {
+    background: var(--navy2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .chart-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .chart-header h3 {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.88rem; font-weight:700;
+    letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--white); margin-bottom:4px;
+  }
+
+  .chart-header p {
+    font-size:0.76rem; color:var(--text2); line-height:1.5;
+  }
+
+  .chart-body { padding: 16px; }
+
+  .chart-body img {
+    width:100%; border-radius:8px; display:block;
+  }
+
+  .chart-caption {
+    padding: 10px 20px 14px;
+    font-size:0.72rem; color:var(--text2);
+    font-style:italic; text-align:center;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .insight-box {
+    background: rgba(13,148,136,0.06);
+    border: 1px solid rgba(13,148,136,0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--text2);
+    line-height: 1.65;
+  }
+
+  .insight-box strong { color: var(--teal2); }
+
+  @media(max-width:768px) {
+    .chart-grid-2 { grid-template-columns:1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>📊 Traffic Analysis</h1>
+    <p>Exploratory data analysis, road network density map, and route optimisation results from the 48,187-record traffic dataset.</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <!-- Exploratory Analysis -->
+  <div class="section-label" style="margin-bottom:12px;">Exploratory Data Analysis</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.1 — Dataset Overview</h3>
+        <p>Density class distribution, hourly traffic patterns, daily traffic patterns, and density index distribution across 48,187 records.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step1_Exploratory_Analysis.png"
+             alt="Exploratory Analysis Charts">
+      </div>
+      <div class="chart-caption">Figure 4.1: Exploratory Analysis of Traffic Dataset — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <strong>Key Insight:</strong> The dataset shows a near-perfectly balanced class distribution —
+    Low (33.0%), Medium (33.0%), and High (34.0%) — which is ideal for training unbiased
+    classification models. The hourly chart clearly shows Lagos-style peak congestion during
+    morning (6–10am) and evening (4–8pm) periods.
+  </div>
+
+  <!-- Road Network -->
+  <div class="section-label" style="margin-top:40px; margin-bottom:12px;">Road Network Density Map</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.6 — Predicted Vehicle Density by Road Segment</h3>
+        <p>Each road segment in the Lagos network coloured by its ML-predicted density level. Green = Low, Orange = Medium, Red = High.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step3_Road_Network_Density.png"
+             alt="Road Network Density Map">
+      </div>
+      <div class="chart-caption">Figure 4.6: Road Network Graph — Predicted Vehicle Density by Segment — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <strong>Key Insight:</strong> The road network graph shows a realistic distribution of
+    congestion across the 27 road segments. High-density segments (red) cluster around
+    major interchange points — consistent with real Lagos traffic patterns where bottlenecks
+    occur at key junctions like Oshodi Interchange and Lagos Island CMS.
+  </div>
+
+  <!-- Route Comparison -->
+  <div class="section-label" style="margin-top:40px; margin-bottom:12px;">Route Optimisation Results</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.7 — Static vs Density-Aware Route Comparison</h3>
+        <p>Side-by-side comparison of the static shortest path (left) versus the ML-optimised density-aware route (right) for Scenario 1.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step3_Route_Comparison.png"
+             alt="Route Comparison">
+      </div>
+      <div class="chart-caption">Figure 4.7: Route Comparison — Static Route vs Density-Aware Route — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.8 — All Scenarios Summary</h3>
+        <p>Route distance comparison and high-density segments encountered across all three origin-destination scenarios.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step3_Scenarios_Summary.png"
+             alt="Scenarios Summary">
+      </div>
+      <div class="chart-caption">Figure 4.8: Route Optimisation Summary Across All Scenarios — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <strong>Key Insight:</strong> The density-aware routing system successfully avoided
+    high-density segments in 2 out of 3 scenarios, accepting a modest distance overhead
+    of 11–18%. In Scenario 3, both routes were identical — confirming the system is
+    appropriately conservative and does not impose unnecessary detours.
+  </div>
+
+  <!-- System Pipeline -->
+  <div class="section-label" style="margin-top:40px; margin-bottom:12px;">Integrated System Pipeline</div>
+  <div class="chart-grid-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.9 — System Architecture</h3>
+        <p>Complete five-module pipeline from raw input through preprocessing, ML prediction, route optimisation, and output.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step4_System_Pipeline.png"
+             alt="System Pipeline">
+      </div>
+      <div class="chart-caption">Figure 4.9: Integrated System Pipeline — Source: Researcher's Field Output (2026)</div>
+    </div>
+  </div>
+
+  <!-- Live Query Performance -->
+  <div class="chart-grid-2" style="margin-top:24px;">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.10 — Live Query Performance</h3>
+        <p>High-density segments encountered and distance overhead across all 5 live queries.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step4_Query_Performance.png"
+             alt="Query Performance">
+      </div>
+      <div class="chart-caption">Figure 4.10: Live Query Performance</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Figure 4.11 — System Dashboard</h3>
+        <p>Complete system KPI dashboard showing all performance indicators and query results table.</p>
+      </div>
+      <div class="chart-body">
+        <img src="/static/charts/Step4_System_Dashboard.png"
+             alt="System Dashboard">
+      </div>
+      <div class="chart-caption">Figure 4.11: System Summary Dashboard</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

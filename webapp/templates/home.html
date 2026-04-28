@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block extra_styles %}
+<style>
+  /* ── Hero ───────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0f2133 0%, #0d1b2a 60%, #0a1520 100%);
+    border-bottom: 1px solid rgba(13,148,136,0.2);
+    padding: 80px 32px 64px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(13,148,136,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--teal2); margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 700; color: var(--white);
+    line-height: 1.15; margin-bottom: 20px;
+    max-width: 760px; margin-left: auto; margin-right: auto;
+  }
+
+  .hero h1 span { color: var(--teal2); }
+
+  .hero p {
+    font-size: 1rem; color: var(--text2);
+    max-width: 580px; margin: 0 auto 36px;
+    line-height: 1.75;
+  }
+
+  .hero-btns {
+    display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    padding: 13px 28px;
+    background: linear-gradient(135deg, var(--teal), var(--teal2));
+    border: none; border-radius: 10px;
+    color: white; font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(13,148,136,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,0.5); }
+
+  .btn-secondary {
+    padding: 13px 28px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: var(--text); font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.25); }
+
+  /* ── KPI grid ────────────────────────────────────────────── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 48px;
+  }
+
+  /* ── Steps ───────────────────────────────────────────────── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-top: 32px;
+  }
+
+  .step-card {
+    background: var(--navy2);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+  }
+
+  .step-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 12px;
+  }
+
+  .step-icon { font-size: 1.8rem; margin-bottom: 12px; display: block; }
+
+  .step-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--white); margin-bottom: 8px;
+  }
+
+  .step-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.65; }
+
+  /* ── Comparison table ────────────────────────────────────── */
+  .compare-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .compare-table th {
+    background: #2E4057;
+    color: white; font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px 16px; text-align: left;
+  }
+
+  .compare-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--text);
+  }
+
+  .compare-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .compare-table .highlight { color: var(--green); font-weight: 600; }
+
+  /* ── Nav cards ───────────────────────────────────────────── */
+  .nav-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 32px;
+  }
+
+  .nav-card {
+    background: var(--navy2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+    display: block;
+  }
+
+  .nav-card:hover {
+    border-color: rgba(13,148,136,0.4);
+    transform: translateY(-3px);
+  }
+
+  .nav-card-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
+
+  .nav-card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--white); margin-bottom: 8px;
+  }
+
+  .nav-card-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.65; }
+
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .steps-grid { grid-template-columns: repeat(2,1fr); }
+    .nav-cards { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 500px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <p class="hero-label">FUOYE Final Year Project · Computer Science · 2026</p>
+  <h1>Vehicle Density Detection &amp;<br><span>Route Optimisation</span></h1>
+  <p>A machine learning-powered system that predicts road congestion levels across
+  Lagos road segments and recommends the fastest, least congested route — in real time.</p>
+  <div class="hero-btns">
+    <a href="/query" class="btn-primary">Find Best Route →</a>
+    <a href="/performance" class="btn-secondary">View Model Results</a>
+  </div>
+</div>
+
+<!-- ── KPI Stats ──────────────────────────────────────────────────────────── -->
+<div class="section" style="padding-bottom:0;">
+  <div class="kpi-grid">
+    <div class="kpi kpi-teal">
+      <div class="kpi-val">97.5<span style="font-size:1.2rem">%</span></div>
+      <div class="kpi-unit">Random Forest Accuracy</div>
+      <div class="kpi-label">Best performing ML model</div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-val">48,187</div>
+      <div class="kpi-unit">Training Records</div>
+      <div class="kpi-label">UCI Metro Traffic Dataset</div>
+    </div>
+    <div class="kpi kpi-gold">
+      <div class="kpi-val">60<span style="font-size:1.2rem">%</span></div>
+      <div class="kpi-unit">Routes Improved</div>
+      <div class="kpi-label">High-density segments avoided</div>
+    </div>
+    <div class="kpi kpi-red">
+      <div class="kpi-val">7.3<span style="font-size:1.2rem">%</span></div>
+      <div class="kpi-unit">Avg Distance Overhead</div>
+      <div class="kpi-label">Cost of congestion avoidance</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── How It Works ───────────────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">How It Works</div>
+  <div class="section-title">From Road Conditions to Optimal Route</div>
+  <div class="section-body">Four stages that transform raw traffic data into a clear, congestion-aware route recommendation powered by machine learning.</div>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <span class="step-num">Step 01</span>
+      <span class="step-icon">📍</span>
+      <div class="step-title">Enter Journey</div>
+      <div class="step-desc">Select your source road, destination, and current time of day from the Route Query page.</div>
+    </div>
+    <div class="step-card">
+      <span class="step-num">Step 02</span>
+      <span class="step-icon">🤖</span>
+      <div class="step-title">ML Prediction</div>
+      <div class="step-desc">Random Forest model (97.5% accuracy) predicts vehicle density — Low, Medium, or High — for every road segment.</div>
+    </div>
+    <div class="step-card">
+      <span class="step-num">Step 03</span>
+      <span class="step-icon">🗺</span>
+      <div class="step-title">Route Optimisation</div>
+      <div class="step-desc">Dijkstra's Algorithm runs on a density-weighted road graph to find the least congested path.</div>
+    </div>
+    <div class="step-card">
+      <span class="step-num">Step 04</span>
+      <span class="step-icon">✅</span>
+      <div class="step-title">Best Route Output</div>
+      <div class="step-desc">System returns best route, congestion level, estimated travel time, and an alternative route for comparison.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Nigeria's Traffic Challenge ──────────────────────────────────────────── -->
+<div class="section" style="padding-top:0;">
+  <div class="card">
+    <div class="card-title">🇳🇬 Nigeria's Traffic Challenge</div>
+    <p style="font-size:0.9rem; line-height:1.8; color:var(--text2); margin-bottom:16px;">
+      Lagos is one of Africa's most congested cities. With over 21 million residents and
+      a rapidly expanding vehicle population, the city's road network faces extreme pressure
+      during morning (6am–10am) and evening (4pm–8pm) peak periods. Traditional navigation
+      systems rely on static maps and do not account for real-time or predicted congestion levels.
+    </p>
+    <p style="font-size:0.9rem; line-height:1.8; color:var(--text2);">
+      This system addresses that gap by combining machine learning-based density prediction
+      with graph-based route optimisation — providing a practical, cost-effective solution
+      that requires no expensive sensor infrastructure.
+    </p>
+  </div>
+</div>
+
+<!-- ── Explore ────────────────────────────────────────────────────────────── -->
+<div class="section" style="padding-top:0;">
+  <div class="section-label">Explore</div>
+  <div class="section-title">Where Would You Like to Go?</div>
+
+  <div class="nav-cards">
+    <a href="/query" class="nav-card">
+      <span class="nav-card-icon">🗺</span>
+      <div class="nav-card-title">Route Query</div>
+      <div class="nav-card-desc">Enter your source, destination, and time. Get the best ML-optimised route with estimated travel time and an alternative.</div>
+    </a>
+    <a href="/analysis" class="nav-card">
+      <span class="nav-card-icon">📊</span>
+      <div class="nav-card-title">Traffic Analysis</div>
+      <div class="nav-card-desc">Explore how vehicle density varies by hour, day, and road segment. See the road network density map and route comparisons.</div>
+    </a>
+    <a href="/performance" class="nav-card">
+      <span class="nav-card-icon">🎯</span>
+      <div class="nav-card-title">Model Performance</div>
+      <div class="nav-card-desc">Full technical evaluation — confusion matrices, accuracy scores, feature importance, and cross-validation results.</div>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

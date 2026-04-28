@@ -1,0 +1,83 @@
+{
+  "system_name": "Vehicle Density Detection and Route Optimisation",
+  "author": "Sanusi Moshood Olanrewaju",
+  "institution": "Federal University Oye-Ekiti (FUOYE)",
+  "ml_model_used": "Random Forest",
+  "dt_accuracy_pct": 99.19,
+  "rf_accuracy_pct": 99.22,
+  "road_nodes": 15,
+  "road_edges": 27,
+  "routing_algorithm": "Dijkstra's Algorithm",
+  "total_queries": 5,
+  "routes_improved": 3,
+  "total_high_avoided": 4,
+  "avg_congestion_reduction_pct": 100.0,
+  "avg_distance_overhead_pct": 7.26,
+  "demo_queries": [
+    {
+      "description": "Morning peak \u2014 North to East",
+      "origin": "A",
+      "destination": "L",
+      "static_path": "A \u2192 E \u2192 F \u2192 G \u2192 L",
+      "static_dist_km": 8.3,
+      "static_high_segs": 1,
+      "aware_path": "A \u2192 E \u2192 F \u2192 G \u2192 M \u2192 L",
+      "aware_dist_km": 9.8,
+      "aware_high_segs": 0,
+      "high_segs_avoided": 1,
+      "dist_overhead_pct": 18.1
+    },
+    {
+      "description": "Afternoon \u2014 South-West to North-East",
+      "origin": "K",
+      "destination": "M",
+      "static_path": "K \u2192 H \u2192 I \u2192 F \u2192 G \u2192 M",
+      "static_dist_km": 9.0,
+      "static_high_segs": 2,
+      "aware_path": "K \u2192 A \u2192 B \u2192 C \u2192 M",
+      "aware_dist_km": 10.0,
+      "aware_high_segs": 0,
+      "high_segs_avoided": 2,
+      "dist_overhead_pct": 11.1
+    },
+    {
+      "description": "Evening peak \u2014 Cross-city",
+      "origin": "A",
+      "destination": "N",
+      "static_path": "A \u2192 K \u2192 O \u2192 N",
+      "static_dist_km": 8.2,
+      "static_high_segs": 0,
+      "aware_path": "A \u2192 K \u2192 O \u2192 N",
+      "aware_dist_km": 8.2,
+      "aware_high_segs": 0,
+      "high_segs_avoided": 0,
+      "dist_overhead_pct": 0.0
+    },
+    {
+      "description": "Off-peak \u2014 North to South",
+      "origin": "B",
+      "destination": "O",
+      "static_path": "B \u2192 A \u2192 K \u2192 O",
+      "static_dist_km": 7.5,
+      "static_high_segs": 0,
+      "aware_path": "B \u2192 A \u2192 K \u2192 O",
+      "aware_dist_km": 7.5,
+      "aware_high_segs": 0,
+      "high_segs_avoided": 0,
+      "dist_overhead_pct": 0.0
+    },
+    {
+      "description": "Weekday \u2014 South-West to North-East corner",
+      "origin": "K",
+      "destination": "D",
+      "static_path": "K \u2192 A \u2192 B \u2192 C \u2192 D",
+      "static_dist_km": 8.5,
+      "static_high_segs": 1,
+      "aware_path": "K \u2192 H \u2192 E \u2192 F \u2192 G \u2192 D",
+      "aware_dist_km": 9.1,
+      "aware_high_segs": 0,
+      "high_segs_avoided": 1,
+      "dist_overhead_pct": 7.1
+    }
+  ]
+}

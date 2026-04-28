@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .page-hero {
+    background: linear-gradient(135deg, #0f2133, #0d1b2a);
+    border-bottom: 1px solid rgba(13,148,136,0.2);
+    padding: 40px 32px 36px;
+  }
+  .page-hero-inner { max-width:1200px; margin:0 auto; }
+  .page-hero h1 {
+    font-family:'Rajdhani',sans-serif; font-size:1.9rem;
+    font-weight:700; color:var(--white); margin-bottom:6px;
+  }
+  .page-hero p { font-size:0.88rem; color:var(--text2); }
+
+  .about-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:24px; margin-bottom:28px;
+  }
+
+  .info-row {
+    display:flex; align-items:flex-start;
+    gap:14px; padding:14px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .info-row:last-child { border-bottom:none; padding-bottom:0; }
+
+  .info-icon {
+    font-size:1.2rem; flex-shrink:0;
+    width:32px; text-align:center; margin-top:2px;
+  }
+
+  .info-label {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.7rem; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--teal2); margin-bottom:3px;
+  }
+
+  .info-val {
+    font-size:0.88rem; color:var(--text); line-height:1.5;
+  }
+
+  /* Tech stack */
+  .tech-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:12px; margin-top:4px;
+  }
+
+  .tech-item {
+    background:rgba(0,0,0,0.2);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px; padding:14px 12px; text-align:center;
+  }
+
+  .tech-icon { font-size:1.5rem; margin-bottom:7px; display:block; }
+
+  .tech-name {
+    font-family:'Rajdhani',sans-serif;
+    font-size:0.82rem; font-weight:700;
+    color:var(--white); margin-bottom:3px;
+  }
+
+  .tech-desc { font-size:0.72rem; color:var(--text2); line-height:1.4; }
+
+  /* Objectives */
+  .obj-list { list-style:none; }
+  .obj-item {
+    display:flex; align-items:flex-start; gap:10px;
+    padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    font-size:0.85rem; color:var(--text2); line-height:1.6;
+  }
+  .obj-item:last-child { border-bottom:none; }
+  .obj-num {
+    font-family:'Rajdhani',sans-serif; font-size:0.7rem; font-weight:700;
+    color:var(--teal2); background:rgba(13,148,136,0.12);
+    border:1px solid rgba(13,148,136,0.25);
+    border-radius:4px; padding:2px 7px; flex-shrink:0; margin-top:2px;
+  }
+
+  /* Results summary */
+  .results-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  }
+
+  .result-item {
+    background:rgba(0,0,0,0.2);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:8px; padding:16px 14px; text-align:center;
+  }
+
+  .result-val {
+    font-family:'Rajdhani',sans-serif; font-size:1.8rem;
+    font-weight:700; color:var(--teal2); line-height:1;
+  }
+
+  .result-label {
+    font-size:0.72rem; color:var(--text2);
+    margin-top:5px; line-height:1.4;
+  }
+
+  @media(max-width:768px) {
+    .about-grid { grid-template-columns:1fr; }
+    .tech-grid  { grid-template-columns:repeat(2,1fr); }
+    .results-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>ℹ About This Project</h1>
+    <p>Project details, researcher information, objectives, technologies used, and key results.</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <!-- Project + Researcher Info -->
+  <div class="about-grid">
+    <div class="card">
+      <div class="card-title">👤 Researcher Information</div>
+      <div class="info-row">
+        <div class="info-icon">🎓</div>
+        <div>
+          <div class="info-label">Full Name</div>
+          <div class="info-val">Sanusi Moshood Olanrewaju</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🔢</div>
+        <div>
+          <div class="info-label">Matriculation Number</div>
+          <div class="info-val">FTP/CSC/25/01116478</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">👨‍🏫</div>
+        <div>
+          <div class="info-label">Supervisor</div>
+          <div class="info-val">Mr. Onadokun Isaac Olawale</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🏛</div>
+        <div>
+          <div class="info-label">Institution</div>
+          <div class="info-val">Federal University Oye-Ekiti (FUOYE)<br>Oye-Ekiti, Ekiti State, Nigeria</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">📚</div>
+        <div>
+          <div class="info-label">Programme</div>
+          <div class="info-val">B.Sc. Computer Science</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">📅</div>
+        <div>
+          <div class="info-label">Year of Submission</div>
+          <div class="info-val">2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Project Information</div>
+      <div class="info-row">
+        <div class="info-icon">📌</div>
+        <div>
+          <div class="info-label">Project Title</div>
+          <div class="info-val">A Proposed Machine Learning Framework for Vehicle Density Detection and Route Optimisation</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🗂</div>
+        <div>
+          <div class="info-label">Dataset</div>
+          <div class="info-val">Metro Interstate Traffic Volume<br>UCI Machine Learning Repository</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">📊</div>
+        <div>
+          <div class="info-label">Dataset Size</div>
+          <div class="info-val">48,187 records (after cleaning)</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🤖</div>
+        <div>
+          <div class="info-label">ML Models</div>
+          <div class="info-val">Decision Tree & Random Forest Classifiers</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🗺</div>
+        <div>
+          <div class="info-label">Routing Algorithm</div>
+          <div class="info-val">Dijkstra's Shortest-Path Algorithm<br>with ML-weighted edges</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🌐</div>
+        <div>
+          <div class="info-label">Road Network</div>
+          <div class="info-val">Lagos, Nigeria — 15 intersections, 27 road segments</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objectives -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">🎯 Research Objectives</div>
+    <ul class="obj-list">
+      <li class="obj-item">
+        <span class="obj-num">01</span>
+        To examine existing approaches to traffic prediction, vehicle density detection, and route optimisation in the literature.
+      </li>
+      <li class="obj-item">
+        <span class="obj-num">02</span>
+        To collect and preprocess traffic-related data suitable for training and evaluating machine learning models.
+      </li>
+      <li class="obj-item">
+        <span class="obj-num">03</span>
+        To develop and train supervised machine learning models — Decision Tree and Random Forest — for vehicle density level estimation.
+      </li>
+      <li class="obj-item">
+        <span class="obj-num">04</span>
+        To design and implement a graph-based route optimisation module that incorporates ML predictions to dynamically adjust routing decisions.
+      </li>
+      <li class="obj-item">
+        <span class="obj-num">05</span>
+        To evaluate the performance of the proposed system using standard classification and routing efficiency metrics.
+      </li>
+    </ul>
+  </div>
+
+  <!-- Key Results -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">📈 Key Results</div>
+    <div class="results-grid">
+      <div class="result-item">
+        <div class="result-val">97.75%</div>
+        <div class="result-label">Decision Tree<br>Test Accuracy</div>
+      </div>
+      <div class="result-item">
+        <div class="result-val">97.50%</div>
+        <div class="result-label">Random Forest<br>Test Accuracy</div>
+      </div>
+      <div class="result-item">
+        <div class="result-val">96.92%</div>
+        <div class="result-label">Random Forest<br>CV Accuracy</div>
+      </div>
+      <div class="result-item">
+        <div class="result-val">60%</div>
+        <div class="result-label">Routes Successfully<br>Improved</div>
+      </div>
+      <div class="result-item">
+        <div class="result-val">4</div>
+        <div class="result-label">High-Density Segments<br>Avoided</div>
+      </div>
+      <div class="result-item">
+        <div class="result-val">7.3%</div>
+        <div class="result-label">Average Distance<br>Overhead</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technologies -->
+  <div class="card">
+    <div class="card-title">🛠 Technologies Used</div>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <span class="tech-icon">🐍</span>
+        <div class="tech-name">Python 3.10+</div>
+        <div class="tech-desc">Primary programming language</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-icon">🤖</span>
+        <div class="tech-name">Scikit-learn</div>
+        <div class="tech-desc">Decision Tree & Random Forest models</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-icon">🕸</span>
+        <div class="tech-name">NetworkX</div>
+        <div class="tech-desc">Road graph & Dijkstra routing</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-icon">🐼</span>
+        <div class="tech-name">Pandas / NumPy</div>
+        <div class="tech-desc">Data processing & feature engineering</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-icon">📊</span>
+        <div class="tech-name">Matplotlib / Seaborn</div>
+        <div class="tech-desc">Data visualisation & charts</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-icon">🌐</span>
+        <div class="tech-name">Flask</div>
+        <div class="tech-desc">Web application framework</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

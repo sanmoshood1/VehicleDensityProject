@@ -1,0 +1,624 @@
+{% extends "base.html" %}
+{% block title %}Route Query{% endblock %}
+
+{% block extra_styles %}
+<style>
+/* ── Layout ─────────────────────────────────────────────── */
+.page-hero{background:linear-gradient(135deg,#0f2133,#0d1b2a);border-bottom:1px solid rgba(13,148,136,0.2);padding:36px 32px 28px;}
+.page-hero-inner{max-width:1200px;margin:0 auto;}
+.page-hero h1{font-family:'Rajdhani',sans-serif;font-size:1.9rem;font-weight:700;color:var(--white);margin-bottom:4px;}
+.page-hero p{font-size:0.86rem;color:var(--text2);}
+
+.query-layout{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start;}
+
+/* ── Form ───────────────────────────────────────────────── */
+label{display:block;font-family:'Rajdhani',sans-serif;font-size:0.73rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+select,input[type="number"]{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-family:'Source Serif 4',serif;font-size:0.88rem;padding:10px 13px;transition:border-color 0.2s,box-shadow 0.2s;outline:none;appearance:none;-webkit-appearance:none;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
+select:focus,input[type="number"]:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.2);}
+select option{background:var(--navy2);}
+.form-group{margin-bottom:15px;}
+
+/* Time row */
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.time-display{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 13px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:var(--teal2);text-align:center;letter-spacing:0.05em;}
+
+/* Toggle row */
+.toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
+.toggle-btn{padding:10px 8px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;text-align:center;user-select:none;}
+.toggle-btn.active-rain{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.5);color:#60a5fa;}
+.toggle-btn.active-holiday{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.5);color:var(--amber);}
+
+/* Peak indicator */
+.peak-indicator{display:none;margin-top:7px;padding:6px 11px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:0.74rem;color:var(--amber);font-family:'Rajdhani',sans-serif;letter-spacing:0.06em;text-align:center;}
+
+/* Submit */
+.btn-query{width:100%;padding:13px;background:linear-gradient(135deg,var(--teal),var(--teal2));border:none;border-radius:10px;color:white;font-family:'Rajdhani',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 16px rgba(13,148,136,0.35);margin-top:6px;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;}
+.btn-query:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,148,136,0.45);}
+.btn-query:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* Network stats */
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px;}
+.mini-stat{background:rgba(0,0,0,0.25);border-radius:8px;padding:9px 7px;text-align:center;}
+.mini-stat .val{font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;line-height:1;}
+.mini-stat .lbl{font-size:0.62rem;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em;}
+.val-low{color:var(--green);}.val-medium{color:var(--amber);}.val-high{color:var(--red);}
+
+/* ── Results Panel ───────────────────────────────────────── */
+.results-panel{display:flex;flex-direction:column;gap:16px;}
+
+/* Map container */
+.map-container{background:var(--navy2);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+.map-header{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:'Rajdhani',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal2);display:flex;align-items:center;gap:8px;}
+#routeMap{height:340px;width:100%;background:#1a2a3a;}
+
+/* Placeholder */
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:340px;color:var(--text2);text-align:center;gap:12px;}
+.placeholder .icon{font-size:2.8rem;opacity:0.2;}
+.placeholder p{font-size:0.84rem;max-width:260px;line-height:1.65;}
+
+/* Loading */
+.loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:12px;}
+.spinner{width:38px;height:38px;border:3px solid rgba(13,148,136,0.2);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{font-family:'Rajdhani',sans-serif;font-size:0.78rem;letter-spacing:0.08em;color:var(--text2);text-transform:uppercase;}
+
+/* Error */
+.error-box{display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:18px;color:#fca5a5;font-size:0.86rem;text-align:center;}
+
+/* Journey bar */
+.journey-bar{display:none;background:linear-gradient(135deg,rgba(13,148,136,0.08),rgba(13,148,136,0.03));border:1px solid rgba(13,148,136,0.2);border-radius:var(--radius);padding:14px 18px;animation:fadeUp 0.3s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.journey-bar-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.journey-endpoint{font-family:'Rajdhani',sans-serif;font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;}
+.journey-endpoint strong{display:block;color:var(--white);font-size:0.88rem;margin-top:2px;}
+.journey-arrow{font-size:1.2rem;color:var(--teal2);}
+.journey-time-badge{font-family:'Rajdhani',sans-serif;background:rgba(13,148,136,0.15);border:1px solid rgba(13,148,136,0.35);border-radius:8px;padding:7px 16px;text-align:center;}
+.jt-val{font-size:1.4rem;font-weight:700;color:var(--teal2);line-height:1;}
+.jt-lbl{font-size:0.6rem;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;}
+
+/* Route cards */
+.route-card{display:none;border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,0.08);animation:fadeUp 0.4s ease both;}
+.route-header{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.route-label{font-family:'Rajdhani',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;}
+.congestion-badge{font-family:'Rajdhani',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:20px;color:white;}
+.route-card.best .route-header{background:rgba(16,185,129,0.1);border-bottom:1px solid rgba(16,185,129,0.18);}
+.route-card.best .route-label{color:var(--green);}
+.route-card.alt .route-header{background:rgba(245,158,11,0.07);border-bottom:1px solid rgba(245,158,11,0.15);}
+.route-card.alt .route-label{color:var(--amber);}
+.route-body{background:var(--navy2);padding:16px 18px;}
+.path-display{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:14px;}
+.path-node{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.11);border-radius:5px;padding:4px 9px;font-size:0.76rem;color:var(--white);white-space:nowrap;}
+.path-node.origin,.path-node.dest{background:rgba(13,148,136,0.16);border-color:rgba(13,148,136,0.4);color:var(--teal2);font-weight:600;}
+.path-arrow{color:var(--text2);font-size:0.8rem;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.stat-item{background:rgba(0,0,0,0.2);border-radius:7px;padding:11px 9px;text-align:center;}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--white);line-height:1;}
+.stat-unit{font-size:0.6rem;color:var(--text2);font-family:'Rajdhani',sans-serif;letter-spacing:0.06em;text-transform:uppercase;}
+.stat-lbl{font-size:0.65rem;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:0.04em;}
+.density-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:11px;gap:2px;}
+.density-bar-seg{border-radius:2px;transition:width 0.4s ease;}
+.db-low{background:var(--green);}.db-medium{background:var(--amber);}.db-high{background:var(--red);}
+.density-legend{display:flex;gap:11px;margin-top:6px;}
+.dl-item{display:flex;align-items:center;gap:4px;font-size:0.68rem;color:var(--text2);}
+.dl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* Alt route map toggle */
+.alt-map-btn{display:none;width:100%;margin-top:10px;padding:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:7px;color:var(--amber);font-family:'Rajdhani',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+.alt-map-btn:hover{background:rgba(245,158,11,0.18);}
+
+@media(max-width:860px){.query-layout{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>🗺 Route Query</h1>
+    <p>Select source, destination, time, and conditions — get an ML-optimised congestion-aware Lagos route with live map.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="query-layout">
+
+    <!-- ── FORM ──────────────────────────────────────────── -->
+    <div>
+      <div class="card">
+        <div class="card-title">Journey Details</div>
+
+        <div class="form-group">
+          <label>Source Road</label>
+          <select id="origin">
+            <option value="">— Select starting point —</option>
+            {% for key, name in roads.items() %}
+            <option value="{{ key }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Destination Road</label>
+          <select id="destination">
+            <option value="">— Select destination —</option>
+            {% for key, name in roads.items() %}
+            <option value="{{ key }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Hour of Day (0 = midnight, 23 = 11pm)</label>
+          <div class="time-row">
+            <input type="number" id="hour" min="0" max="23" value="8"
+                   oninput="updateTimeDisplay()">
+            <div class="time-display" id="timeDisplay">08:00</div>
+          </div>
+          <div class="peak-indicator" id="peakIndicator">
+            ⚠ Lagos Peak Hour — Expect Heavy Congestion
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Day of Week</label>
+          <select id="day_of_week">
+            <option value="0">Monday</option>
+            <option value="1" selected>Tuesday</option>
+            <option value="2">Wednesday</option>
+            <option value="3">Thursday</option>
+            <option value="4">Friday</option>
+            <option value="5">Saturday</option>
+            <option value="6">Sunday</option>
+          </select>
+        </div>
+
+        <label style="margin-bottom:8px;">Conditions</label>
+        <div class="toggle-row">
+          <div class="toggle-btn" id="rainBtn" onclick="toggleRain()">
+            🌧 Raining
+          </div>
+          <div class="toggle-btn" id="holidayBtn" onclick="toggleHoliday()">
+            🎉 Public Holiday
+          </div>
+        </div>
+
+        <button class="btn-query" id="queryBtn" onclick="submitQuery()">
+          Find Best Route →
+        </button>
+
+        <div class="mini-stats" id="miniStats" style="display:none;">
+          <div class="mini-stat">
+            <div class="val val-low" id="statLow">—</div>
+            <div class="lbl">Low Roads</div>
+          </div>
+          <div class="mini-stat">
+            <div class="val val-medium" id="statMed">—</div>
+            <div class="lbl">Med Roads</div>
+          </div>
+          <div class="mini-stat">
+            <div class="val val-high" id="statHigh">—</div>
+            <div class="lbl">High Roads</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">Density Legend</div>
+        <div style="font-size:0.82rem;line-height:1.9;color:var(--text2);">
+          <p>🟢 <strong style="color:var(--green)">Low</strong> — Free flow · 55 km/h</p>
+          <p>🟡 <strong style="color:var(--amber)">Medium</strong> — Moderate · 28 km/h</p>
+          <p>🔴 <strong style="color:var(--red)">High</strong> — Congested · 10 km/h</p>
+          <br>
+          <p style="font-size:0.76rem;">Lagos peak hours:<br>
+          <strong style="color:var(--text)">Morning: 6–10am</strong> &nbsp;·&nbsp;
+          <strong style="color:var(--text)">Evening: 4–8pm</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RESULTS PANEL ──────────────────────────────────── -->
+    <div class="results-panel">
+
+      <!-- Map -->
+      <div class="map-container">
+        <div class="map-header">
+          🗺 Lagos Road Map
+          <span id="mapStatus" style="color:var(--text2);font-weight:400;margin-left:auto;">
+            Submit a query to see route on map
+          </span>
+        </div>
+        <div id="routeMap">
+          <div class="placeholder">
+            <div class="icon">📍</div>
+            <p>Your route will appear here on the Lagos map after you submit a query.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journey summary bar -->
+      <div class="journey-bar" id="journeyBar">
+        <div class="journey-bar-inner">
+          <div class="journey-endpoint">
+            <span>From</span><strong id="jbOrigin">—</strong>
+          </div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-endpoint">
+            <span>To</span><strong id="jbDest">—</strong>
+          </div>
+          <div class="journey-time-badge">
+            <div class="jt-val" id="jbTime">—</div>
+            <div class="jt-lbl">Best Time (mins)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="card loading" id="loading">
+        <div class="spinner"></div>
+        <p>Predicting density &amp; computing route…</p>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" id="errorBox"></div>
+
+      <!-- Best Route -->
+      <div class="route-card best card" id="bestCard">
+        <div class="route-header">
+          <span class="route-label">✅ Best Route (ML-Optimised)</span>
+          <span class="congestion-badge" id="bestBadge"></span>
+        </div>
+        <div class="route-body">
+          <div class="path-display" id="bestPath"></div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val" id="bestDist">—</div>
+              <div class="stat-unit">km</div>
+              <div class="stat-lbl">Distance</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="bestTime">—</div>
+              <div class="stat-unit">mins</div>
+              <div class="stat-lbl">Travel Time</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="bestStops">—</div>
+              <div class="stat-unit">stops</div>
+              <div class="stat-lbl">Intersections</div>
+            </div>
+          </div>
+          <div class="density-bar">
+            <div class="density-bar-seg db-low"    id="bestBarLow"></div>
+            <div class="density-bar-seg db-medium" id="bestBarMed"></div>
+            <div class="density-bar-seg db-high"   id="bestBarHigh"></div>
+          </div>
+          <div class="density-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:var(--green)"></div>Low: <span id="bestDLow">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div>Medium: <span id="bestDMed">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--red)"></div>High: <span id="bestDHigh">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alternative Route -->
+      <div class="route-card alt card" id="altCard">
+        <div class="route-header">
+          <span class="route-label">⚠ Alternative Route</span>
+          <span class="congestion-badge" id="altBadge"></span>
+        </div>
+        <div class="route-body">
+          <div class="path-display" id="altPath"></div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val" id="altDist">—</div>
+              <div class="stat-unit">km</div>
+              <div class="stat-lbl">Distance</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="altTime">—</div>
+              <div class="stat-unit">mins</div>
+              <div class="stat-lbl">Travel Time</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" id="altStops">—</div>
+              <div class="stat-unit">stops</div>
+              <div class="stat-lbl">Intersections</div>
+            </div>
+          </div>
+          <div class="density-bar">
+            <div class="density-bar-seg db-low"    id="altBarLow"></div>
+            <div class="density-bar-seg db-medium" id="altBarMed"></div>
+            <div class="density-bar-seg db-high"   id="altBarHigh"></div>
+          </div>
+          <div class="density-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:var(--green)"></div>Low: <span id="altDLow">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div>Medium: <span id="altDMed">—</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--red)"></div>High: <span id="altDHigh">—</span></div>
+          </div>
+          <button class="alt-map-btn" id="altMapBtn" onclick="showAltOnMap()">
+            🗺 Show This Route on Map
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /results-panel -->
+  </div>
+</div>
+
+<!-- Pass road data to JS -->
+<script>
+const ALL_COORDS = {{ all_coords|safe }};
+const ALL_EDGES  = {{ all_edges|safe }};
+</script>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ── State ─────────────────────────────────────────────────
+let isRaining  = false;
+let isHoliday  = false;
+let mapObj     = null;
+let routeLayers = [];
+let markerLayers = [];
+let lastResult = null;
+
+// ── Toggle buttons ────────────────────────────────────────
+function toggleRain() {
+  isRaining = !isRaining;
+  const btn = document.getElementById('rainBtn');
+  btn.classList.toggle('active-rain', isRaining);
+  btn.textContent = isRaining ? '🌧 Raining (ON)' : '🌧 Raining';
+}
+
+function toggleHoliday() {
+  isHoliday = !isHoliday;
+  const btn = document.getElementById('holidayBtn');
+  btn.classList.toggle('active-holiday', isHoliday);
+  btn.textContent = isHoliday ? '🎉 Holiday (ON)' : '🎉 Public Holiday';
+}
+
+// ── Time display ──────────────────────────────────────────
+function updateTimeDisplay() {
+  const h = Math.max(0, Math.min(23, parseInt(document.getElementById('hour').value) || 0));
+  document.getElementById('timeDisplay').textContent = String(h).padStart(2,'0') + ':00';
+  const isPeak = (h >= 6 && h <= 10) || (h >= 16 && h <= 20);
+  document.getElementById('peakIndicator').style.display = isPeak ? 'block' : 'none';
+}
+
+// ── Initialise Leaflet map ────────────────────────────────
+function initMap() {
+  if (mapObj) return;
+  const mapDiv = document.getElementById('routeMap');
+  mapDiv.innerHTML = '';
+  mapDiv.style.height = '340px';
+
+  mapObj = L.map('routeMap', { zoomControl: true, scrollWheelZoom: true })
+    .setView([6.5244, 3.3792], 11);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(mapObj);
+
+  // Draw all network edges faintly
+  ALL_EDGES.forEach(edge => {
+    const from = ALL_COORDS[edge.from];
+    const to   = ALL_COORDS[edge.to];
+    if (from && to) {
+      L.polyline([[from.lat, from.lng],[to.lat, to.lng]], {
+        color: '#334455', weight: 1.5, opacity: 0.4, dashArray: '4,4'
+      }).addTo(mapObj);
+    }
+  });
+
+  document.getElementById('mapStatus').textContent = 'Lagos road network loaded';
+}
+
+// ── Clear route layers ────────────────────────────────────
+function clearRouteLayers() {
+  routeLayers.forEach(l => { if(mapObj) mapObj.removeLayer(l); });
+  markerLayers.forEach(l => { if(mapObj) mapObj.removeLayer(l); });
+  routeLayers = []; markerLayers = [];
+}
+
+// ── Draw route on map ─────────────────────────────────────
+function drawRoute(segments, originName, destName, originCoords, destCoords) {
+  clearRouteLayers();
+  if (!mapObj || !segments || segments.length === 0) return;
+
+  const bounds = [];
+
+  // Draw each segment coloured by density
+  segments.forEach(seg => {
+    const line = L.polyline(
+      [[seg.from.lat, seg.from.lng],[seg.to.lat, seg.to.lng]],
+      { color: seg.colour, weight: 5, opacity: 0.92, lineCap: 'round' }
+    ).bindPopup(`
+      <b>${seg.from.name}</b><br>→ ${seg.to.name}<br>
+      <span style="color:${seg.colour};font-weight:bold;">
+        ${seg.density} Density
+      </span>
+    `);
+    line.addTo(mapObj);
+    routeLayers.push(line);
+    bounds.push([seg.from.lat, seg.from.lng]);
+    bounds.push([seg.to.lat,   seg.to.lng]);
+  });
+
+  // Origin marker (green)
+  const originIcon = L.divIcon({
+    html: `<div style="background:#10b981;width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>`,
+    iconSize:[14,14], iconAnchor:[7,7], className:''
+  });
+  const destIcon = L.divIcon({
+    html: `<div style="background:#ef4444;width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>`,
+    iconSize:[14,14], iconAnchor:[7,7], className:''
+  });
+
+  const oMarker = L.marker([originCoords.lat, originCoords.lng], {icon: originIcon})
+    .bindPopup(`<b>🟢 START</b><br>${originName}`).addTo(mapObj);
+  const dMarker = L.marker([destCoords.lat,   destCoords.lng],   {icon: destIcon})
+    .bindPopup(`<b>🔴 END</b><br>${destName}`).addTo(mapObj);
+
+  markerLayers.push(oMarker, dMarker);
+
+  // Fit map to route
+  if (bounds.length > 0) {
+    mapObj.fitBounds(bounds, { padding: [40, 40] });
+  }
+
+  document.getElementById('mapStatus').textContent = `Route displayed — ${segments.length} segments`;
+}
+
+// ── Show alternative route on map ─────────────────────────
+function showAltOnMap() {
+  if (!lastResult || !lastResult.alternative) return;
+  const r = lastResult;
+  drawRoute(
+    r.alternative.map_segments,
+    r.origin_name, r.dest_name,
+    r.origin_coords, r.dest_coords
+  );
+  document.getElementById('mapStatus').textContent = 'Alternative route displayed';
+  document.getElementById('altMapBtn').textContent = '✅ Alternative Route on Map';
+}
+
+// ── Build path HTML ───────────────────────────────────────
+function buildPath(names) {
+  const d = document.createElement('div');
+  d.className = 'path-display';
+  names.forEach((n, i) => {
+    const nd = document.createElement('span');
+    nd.className = 'path-node' + (i===0?' origin': i===names.length-1?' dest':'');
+    nd.textContent = n; d.appendChild(nd);
+    if (i < names.length-1) {
+      const a = document.createElement('span');
+      a.className = 'path-arrow'; a.textContent = '→'; d.appendChild(a);
+    }
+  });
+  return d;
+}
+
+function setBadge(el, level) {
+  const cols = {'Low':'#10b981','Medium':'#f59e0b','High':'#ef4444'};
+  el.textContent = level + ' Congestion';
+  el.style.background = cols[level] || '#94a3b8';
+}
+
+function setBar(pre, dens, tot) {
+  const t = tot || 1;
+  document.getElementById(pre+'BarLow').style.width  = (dens.Low/t*100)+'%';
+  document.getElementById(pre+'BarMed').style.width  = (dens.Medium/t*100)+'%';
+  document.getElementById(pre+'BarHigh').style.width = (dens.High/t*100)+'%';
+  document.getElementById(pre+'DLow').textContent    = dens.Low   + ' seg';
+  document.getElementById(pre+'DMed').textContent    = dens.Medium + ' seg';
+  document.getElementById(pre+'DHigh').textContent   = dens.High  + ' seg';
+}
+
+function showLoading(yes) {
+  document.getElementById('loading').style.display = yes ? 'flex' : 'none';
+}
+
+// ── Main query function ───────────────────────────────────
+async function submitQuery() {
+  const origin      = document.getElementById('origin').value;
+  const dest        = document.getElementById('destination').value;
+  const hour        = parseInt(document.getElementById('hour').value) || 8;
+  const day_of_week = parseInt(document.getElementById('day_of_week').value);
+  const btn         = document.getElementById('queryBtn');
+
+  if (!origin) { alert('Please select a source road.'); return; }
+  if (!dest)   { alert('Please select a destination road.'); return; }
+  if (origin === dest) { alert('Source and destination must be different.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Computing…';
+  showLoading(true);
+  document.getElementById('errorBox').style.display    = 'none';
+  document.getElementById('bestCard').style.display    = 'none';
+  document.getElementById('altCard').style.display     = 'none';
+  document.getElementById('journeyBar').style.display  = 'none';
+  document.getElementById('miniStats').style.display   = 'none';
+  document.getElementById('altMapBtn').style.display   = 'none';
+
+  // Initialise map on first use
+  initMap();
+
+  try {
+    const res = await fetch('/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ origin, destination: dest, hour, day_of_week,
+                             is_holiday: isHoliday, is_raining: isRaining }),
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      document.getElementById('errorBox').textContent = data.error || 'An error occurred.';
+      document.getElementById('errorBox').style.display = 'block';
+      return;
+    }
+
+    const r = data.result;
+    lastResult = r;
+
+    // Journey bar
+    document.getElementById('jbOrigin').textContent = r.origin_name;
+    document.getElementById('jbDest').textContent   = r.dest_name;
+    document.getElementById('jbTime').textContent   = r.best.time_mins;
+    document.getElementById('journeyBar').style.display = 'block';
+
+    // Best route card
+    const bp = document.getElementById('bestPath');
+    bp.innerHTML = ''; bp.appendChild(buildPath(r.best.path_names));
+    setBadge(document.getElementById('bestBadge'), r.best.congestion);
+    document.getElementById('bestDist').textContent  = r.best.distance;
+    document.getElementById('bestTime').textContent  = r.best.time_mins;
+    document.getElementById('bestStops').textContent = r.best.path.length - 2;
+    setBar('best', r.best.density, r.best.path.length - 1);
+    document.getElementById('bestCard').style.display = 'block';
+
+    // Draw best route on map
+    drawRoute(r.best.map_segments, r.origin_name, r.dest_name,
+              r.origin_coords, r.dest_coords);
+
+    // Alternative route card
+    if (r.alternative) {
+      const ap = document.getElementById('altPath');
+      ap.innerHTML = ''; ap.appendChild(buildPath(r.alternative.path_names));
+      setBadge(document.getElementById('altBadge'), r.alternative.congestion);
+      document.getElementById('altDist').textContent  = r.alternative.distance;
+      document.getElementById('altTime').textContent  = r.alternative.time_mins;
+      document.getElementById('altStops').textContent = r.alternative.path.length - 2;
+      setBar('alt', r.alternative.density, r.alternative.path.length - 1);
+      document.getElementById('altCard').style.display    = 'block';
+      document.getElementById('altMapBtn').style.display  = 'block';
+    }
+
+    // Network stats
+    document.getElementById('statLow').textContent  = r.network_density.Low;
+    document.getElementById('statMed').textContent  = r.network_density.Medium;
+    document.getElementById('statHigh').textContent = r.network_density.High;
+    document.getElementById('miniStats').style.display = 'grid';
+
+  } catch (err) {
+    document.getElementById('errorBox').textContent = 'Network error: ' + err.message;
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Find Best Route →';
+    showLoading(false);
+  }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => { if (e.key === 'Enter') submitQuery(); });
+
+// Init
+updateTimeDisplay();
+</script>
+{% endblock %}
