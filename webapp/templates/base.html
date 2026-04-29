@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +8,14 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
+    /* ── Theme Variables ─────────────────────────────────── */
+    :root[data-theme="dark"] {
       --navy:   #0d1b2a;
       --navy2:  #1b2d3f;
       --navy3:  #0f2133;
       --teal:   #0d9488;
       --teal2:  #14b8a6;
       --gold:   #f59e0b;
-      --light:  #f0f4f8;
       --white:  #ffffff;
       --text:   #cbd5e1;
       --text2:  #94a3b8;
@@ -24,6 +24,37 @@
       --red:    #ef4444;
       --radius: 12px;
       --shadow: 0 4px 24px rgba(0,0,0,0.35);
+      --bg-grid: rgba(13,148,136,0.04);
+      --border:  rgba(255,255,255,0.08);
+      --input-bg: rgba(0,0,0,0.3);
+      --input-border: rgba(255,255,255,0.12);
+      --card-bg: #1b2d3f;
+      --toggle-bg: rgba(255,255,255,0.05);
+      --toggle-border: rgba(255,255,255,0.1);
+    }
+
+    :root[data-theme="light"] {
+      --navy:   #f0f4f8;
+      --navy2:  #ffffff;
+      --navy3:  #e2e8f0;
+      --teal:   #0d9488;
+      --teal2:  #0f766e;
+      --gold:   #d97706;
+      --white:  #1e293b;
+      --text:   #334155;
+      --text2:  #64748b;
+      --green:  #059669;
+      --amber:  #d97706;
+      --red:    #dc2626;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.1);
+      --bg-grid: rgba(13,148,136,0.06);
+      --border:  rgba(0,0,0,0.1);
+      --input-bg: rgba(0,0,0,0.04);
+      --input-border: rgba(0,0,0,0.15);
+      --card-bg: #ffffff;
+      --toggle-bg: rgba(0,0,0,0.05);
+      --toggle-border: rgba(0,0,0,0.12);
     }
 
     html { scroll-behavior: smooth; }
@@ -33,14 +64,15 @@
       background: var(--navy);
       color: var(--text);
       min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
 
     body::before {
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(13,148,136,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(13,148,136,0.04) 1px, transparent 1px);
+        linear-gradient(var(--bg-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none; z-index: 0;
     }
@@ -48,9 +80,10 @@
     /* ── Navbar ──────────────────────────────────────────── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(13,27,42,0.97);
-      border-bottom: 1px solid rgba(13,148,136,0.25);
+      background: var(--navy);
+      border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .nav-inner {
@@ -85,22 +118,36 @@
     }
 
     .nav-links a {
-      display: block;
-      padding: 6px 14px;
-      border-radius: 7px;
+      display: block; padding: 6px 14px; border-radius: 7px;
       font-family: 'Rajdhani', sans-serif;
       font-size: 0.82rem; font-weight: 600;
       letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--text2);
-      text-decoration: none;
+      color: var(--text2); text-decoration: none;
       transition: color 0.2s, background 0.2s;
     }
 
-    .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+    .nav-links a:hover { color: var(--white); background: var(--toggle-bg); }
     .nav-links a.active { color: var(--teal2); background: rgba(13,148,136,0.12); }
 
+    /* ── Theme Toggle Button ─────────────────────────────── */
+    .theme-toggle {
+      width: 40px; height: 40px;
+      background: var(--toggle-bg);
+      border: 1px solid var(--toggle-border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.1rem;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      flex-shrink: 0; margin-left: 8px;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(13,148,136,0.15);
+      border-color: rgba(13,148,136,0.4);
+      transform: scale(1.05);
+    }
+
     .nav-badge {
-      margin-left: auto;
       font-family: 'Rajdhani', sans-serif;
       font-size: 0.7rem; font-weight: 600;
       letter-spacing: 0.08em; text-transform: uppercase;
@@ -114,7 +161,7 @@
     /* ── Page wrapper ────────────────────────────────────── */
     .page { position: relative; z-index: 1; }
 
-    /* ── Shared section ──────────────────────────────────── */
+    /* ── Section ─────────────────────────────────────────── */
     .section {
       max-width: 1200px; margin: 0 auto;
       padding: 48px 32px;
@@ -122,11 +169,12 @@
 
     /* ── Cards ───────────────────────────────────────────── */
     .card {
-      background: var(--navy2);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 28px;
       box-shadow: var(--shadow);
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .card-title {
@@ -139,15 +187,16 @@
 
     .card-title::after {
       content: ''; flex: 1; height: 1px;
-      background: rgba(255,255,255,0.08);
+      background: var(--border);
     }
 
-    /* ── KPI stat box ────────────────────────────────────── */
+    /* ── KPI ─────────────────────────────────────────────── */
     .kpi {
-      background: var(--navy2);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 24px 20px; text-align: center;
+      transition: background 0.3s;
     }
 
     .kpi-val {
@@ -163,11 +212,7 @@
       margin-top: 4px;
     }
 
-    .kpi-label {
-      font-size: 0.78rem; color: var(--text2);
-      margin-top: 6px; line-height: 1.4;
-    }
-
+    .kpi-label { font-size: 0.78rem; color: var(--text2); margin-top: 6px; }
     .kpi-teal  { border-top: 3px solid var(--teal2); }
     .kpi-green { border-top: 3px solid var(--green); }
     .kpi-gold  { border-top: 3px solid var(--gold);  }
@@ -185,9 +230,9 @@
     .tag-teal  { color:var(--teal2); border-color:rgba(13,148,136,0.4); background:rgba(13,148,136,0.08); }
     .tag-gold  { color:var(--gold);  border-color:rgba(245,158,11,0.4); background:rgba(245,158,11,0.08); }
     .tag-green { color:var(--green); border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.08); }
-    .tag-white { color:var(--text);  border-color:rgba(255,255,255,0.15); background:rgba(255,255,255,0.04); }
+    .tag-white { color:var(--text);  border-color:var(--border); background:var(--toggle-bg); }
 
-    /* ── Section heading ─────────────────────────────────── */
+    /* ── Section headings ────────────────────────────────── */
     .section-label {
       font-family: 'Rajdhani', sans-serif;
       font-size: 0.72rem; font-weight: 700;
@@ -198,31 +243,45 @@
     .section-title {
       font-family: 'Rajdhani', sans-serif;
       font-size: 2rem; font-weight: 700;
-      color: var(--white); line-height: 1.2;
-      margin-bottom: 14px;
+      color: var(--white); line-height: 1.2; margin-bottom: 14px;
     }
 
     .section-body {
       font-size: 0.92rem; color: var(--text2);
-      line-height: 1.75; max-width: 640px;
+      max-width: 640px; line-height: 1.75;
     }
 
     /* ── Chart image ─────────────────────────────────────── */
     .chart-img {
       width: 100%; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
-      display: block;
+      border: 1px solid var(--border); display: block;
+    }
+
+    /* ── Form elements ───────────────────────────────────── */
+    select, input[type="number"] {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      color: var(--white) !important;
     }
 
     /* ── Footer ──────────────────────────────────────────── */
     footer {
       position: relative; z-index: 1;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid var(--border);
       padding: 24px 32px; text-align: center;
       font-size: 0.78rem; color: var(--text2);
       font-family: 'Rajdhani', sans-serif;
       letter-spacing: 0.05em;
+      transition: border-color 0.3s;
     }
+
+    /* ── Light mode overrides ────────────────────────────── */
+    [data-theme="light"] .nav-brand span { color: #1e293b; }
+    [data-theme="light"] .nav-links a { color: #64748b; }
+    [data-theme="light"] .nav-links a:hover { color: #1e293b; background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .section-title { color: #1e293b; }
+    [data-theme="light"] .kpi-val { color: #1e293b; }
+    [data-theme="light"] select option { background: #ffffff; color: #1e293b; }
 
     /* ── Responsive ──────────────────────────────────────── */
     @media (max-width: 768px) {
@@ -244,13 +303,16 @@
       <span>VehicleDensity AI</span>
     </a>
     <ul class="nav-links">
-      <li><a href="/" class="{% if active == 'home' %}active{% endif %}">Home</a></li>
-      <li><a href="/query" class="{% if active == 'query' %}active{% endif %}">Route Query</a></li>
-      <li><a href="/analysis" class="{% if active == 'analysis' %}active{% endif %}">Analysis</a></li>
+      <li><a href="/"            class="{% if active == 'home'        %}active{% endif %}">Home</a></li>
+      <li><a href="/query"       class="{% if active == 'query'       %}active{% endif %}">Route Query</a></li>
+      <li><a href="/analysis"    class="{% if active == 'analysis'    %}active{% endif %}">Analysis</a></li>
       <li><a href="/performance" class="{% if active == 'performance' %}active{% endif %}">Model Performance</a></li>
-      <li><a href="/about" class="{% if active == 'about' %}active{% endif %}">About</a></li>
+      <li><a href="/about"       class="{% if active == 'about'       %}active{% endif %}">About</a></li>
     </ul>
     <div class="nav-badge">FUOYE · B.Sc. CS · 2026</div>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"
+            title="Toggle light/dark mode">🌙</button>
   </div>
 </nav>
 
@@ -265,6 +327,27 @@
   Supervisor: Mr. Onadokun Isaac Olawale &nbsp;·&nbsp;
   Dept. of Computer Science, FUOYE &nbsp;·&nbsp; 2026
 </footer>
+
+<!-- ── Theme Script ────────────────────────────────────────────────────────── -->
+<script>
+  // Load saved theme or default to dark
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateToggleIcon(savedTheme);
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next    = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateToggleIcon(next);
+  }
+
+  function updateToggleIcon(theme) {
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+</script>
 
 {% block scripts %}{% endblock %}
 </body>
