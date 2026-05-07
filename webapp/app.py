@@ -11,6 +11,46 @@ warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
 
+# ── Semi-Live Traffic Integration ─────────────────────────────────────────────
+import requests as http_requests
+from datetime import date
+
+ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6Ijk3MGNjMTg1MDkxYzRjNzlhZTM1ZTA1YTZmYjYzZjNlIiwiaCI6Im11cm11cjY0In0="
+
+def get_live_duration(lat1, lng1, lat2, lng2):
+    """Get real current travel time between two GPS points using ORS."""
+    try:
+        url = "https://api.openrouteservice.org/v2/directions/driving-car"
+        headers = {"Authorization": ORS_API_KEY}
+        params = {
+            "start": f"{lng1},{lat1}",
+            "end":   f"{lng2},{lat2}"
+        }
+        r = http_requests.get(url, headers=headers, params=params, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            # Duration in seconds → convert to minutes
+            duration = data['features'][0]['properties']['segments'][0]['duration']
+            distance = data['features'][0]['properties']['segments'][0]['distance'] / 1000
+            return duration / 60, distance  # (travel_time_mins, distance_km)
+    except Exception:
+        pass
+    return None, None
+
+def live_density_from_ors(base_dist_km, live_time_mins):
+    """Compare live travel time to free-flow to determine density."""
+    if live_time_mins is None or base_dist_km == 0:
+        return None
+    free_flow_mins = (base_dist_km / 55) * 60  # 55 km/h free flow
+    ratio = live_time_mins / max(free_flow_mins, 0.1)
+    if ratio < 1.3:
+        return 'Low'
+    elif ratio < 2.2:
+        return 'Medium'
+    else:
+        return 'High'
+
+
 # =============================================================================
 # LAGOS ROAD NETWORK — 40 Real Roads with GPS Coordinates
 # =============================================================================
@@ -83,9 +123,52 @@ DENSITY_COLOURS = {
     'High':   {'bg':'#f8d7da','text':'#721c24','badge':'#dc3545','map':'#ef4444'},
 }
 
-NIGERIAN_HOLIDAYS = [
-    '01-01','02-01','05-01','06-12','10-01','10-14','12-25','12-26'
+# ── Nigerian Public Holidays ──────────────────────────────────────────────────
+# Format: MM-DD for fixed holidays
+FIXED_HOLIDAYS = [
+    '01-01',  # New Year Day
+    '05-01',  # Workers Day
+    '06-12',  # Democracy Day
+    '10-01',  # Independence Day
+    '12-25',  # Christmas Day
+    '12-26',  # Boxing Day
 ]
+
+# Eid dates vary by year — approximate dates for 2025 and 2026
+EID_DATES = [
+    '03-30',  # Eid al-Fitr 2025 (approx)
+    '06-06',  # Eid al-Adha 2025 (approx)
+    '03-19',  # Eid al-Fitr 2026 (approx)
+    '05-27',  # Eid al-Adha 2026 (approx)
+]
+
+ALL_HOLIDAYS = FIXED_HOLIDAYS + EID_DATES
+
+def is_nigerian_holiday():
+    """Auto-detect if today is a Nigerian public holiday."""
+    from datetime import date
+    today = date.today().strftime('%m-%d')
+    return today in ALL_HOLIDAYS
+
+def is_tgif_pattern():
+    """Detect last Friday of month — heavy Lagos traffic day."""
+    from datetime import date
+    import calendar
+    today = date.today()
+    if today.weekday() != 4:  # 4 = Friday
+        return False
+    # Check if it is the last Friday of the month
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    last_friday = max(
+        day for day in range(1, last_day + 1)
+        if date(today.year, today.month, day).weekday() == 4
+    )
+    return today.day == last_friday
+
+def is_rainy_season():
+    """Lagos rainy season: April to October."""
+    from datetime import date
+    return date.today().month in [4, 5, 6, 7, 8, 9, 10]
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 DATA_DIR  = os.path.join(os.path.dirname(__file__), '..', 'data')
@@ -116,7 +199,7 @@ def build_base_graph():
             G.add_edge(u, v, base_weight=w, weight=w)
     return G
 
-def predict_density(hour, day_of_week=1, is_holiday=False, is_raining=False):
+def predict_density(hour, day_of_week=1, is_holiday=False, is_raining=False, is_tgif=False, rainy_season=False):
     np.random.seed(int(hour)*7 + int(day_of_week)*3 + 13)
     G = build_base_graph()
     edges_list = list(G.edges())
@@ -127,12 +210,24 @@ def predict_density(hour, day_of_week=1, is_holiday=False, is_raining=False):
     is_night        = hour >= 22 or hour <= 4
     is_peak         = is_morning_peak or is_evening_peak
 
+
     if is_holiday:
-        dist = ['Low']*20 + ['Medium']*10 + ['High']*5
+        # Nigerian public holiday — significantly lighter traffic
+        dist = ['Low']*22 + ['Medium']*8 + ['High']*5
+    elif is_peak and is_raining and rainy_season:
+        # Peak + rain + rainy season = worst Lagos scenario
+        dist = ['Low']*2  + ['Medium']*5  + ['High']*28
     elif is_peak and is_raining:
+        # Peak + rain
         dist = ['Low']*3  + ['Medium']*7  + ['High']*25
+    elif is_tgif and is_peak:
+        # Last Friday of month during peak — extra heavy
+        dist = ['Low']*3  + ['Medium']*8  + ['High']*24
     elif is_peak:
         dist = ['Low']*5  + ['Medium']*10 + ['High']*20
+    elif is_raining and rainy_season and not is_night:
+        # Rainy season rain — flood risk roads very heavy
+        dist = ['Low']*5  + ['Medium']*12 + ['High']*18
     elif is_raining and not is_night:
         dist = ['Low']*8  + ['Medium']*15 + ['High']*12
     elif is_weekend:
@@ -156,13 +251,30 @@ def predict_density(hour, day_of_week=1, is_holiday=False, is_raining=False):
         density_map[edge] = label
     return density_map
 
-def build_aware_graph(density_map):
+def build_aware_graph(density_map, use_live=True):
     G = build_base_graph()
+    live_count = 0
     for u,v in G.edges():
         edge = (u,v) if (u,v) in density_map else (v,u)
         base = G[u][v]['base_weight']
-        pen  = PENALTY_MAP.get(density_map.get(edge,'Low'), 1.0)
-        G[u][v]['weight'] = round(base*pen, 3)
+        density = density_map.get(edge, 'Low')
+
+        # Try live ORS data first
+        if use_live:
+            lat1 = ROADS[u]['lat']; lng1 = ROADS[u]['lng']
+            lat2 = ROADS[v]['lat']; lng2 = ROADS[v]['lng']
+            live_time, _ = get_live_duration(lat1, lng1, lat2, lng2)
+            live_label   = live_density_from_ors(base, live_time)
+            if live_label:
+                density = live_label
+                live_count += 1
+
+        pen = PENALTY_MAP.get(density, 1.0)
+        G[u][v]['weight']  = round(base * pen, 3)
+        density_map[edge]  = density
+
+    if live_count > 0:
+        print(f"✅ Live ORS data used for {live_count} road segments")
     return G
 
 def get_edge_density(path, density_map):
@@ -215,8 +327,15 @@ def build_map_segments(path, density_map):
     return segments
 
 def route_query(origin, dest, hour, day_of_week=1, is_holiday=False, is_raining=False):
+    # Auto-detect Nigerian public holiday if not manually set
+    if not is_holiday:
+        is_holiday = is_nigerian_holiday()
+    # Auto-detect TGIF heavy traffic pattern
+    is_tgif = is_tgif_pattern()
+    # Auto-detect rainy season for flood risk
+    rainy_season = is_rainy_season()
     G_base      = build_base_graph()
-    density_map = predict_density(hour, day_of_week, is_holiday, is_raining)
+    density_map = predict_density(hour, day_of_week, is_holiday, is_raining, is_tgif, rainy_season)
     G_aware     = build_aware_graph(density_map)
 
     best_path = nx.dijkstra_path(G_aware, origin, dest, weight='weight')
