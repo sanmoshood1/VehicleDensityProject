@@ -6,3 +6,4 @@ networkx
 matplotlib
 seaborn
 gunicorn
+requests
