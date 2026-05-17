@@ -251,30 +251,14 @@ def predict_density(hour, day_of_week=1, is_holiday=False, is_raining=False, is_
         density_map[edge] = label
     return density_map
 
-def build_aware_graph(density_map, use_live=True):
+def build_aware_graph(density_map, use_live=False):
     G = build_base_graph()
-    live_count = 0
     for u,v in G.edges():
         edge = (u,v) if (u,v) in density_map else (v,u)
         base = G[u][v]['base_weight']
         density = density_map.get(edge, 'Low')
-
-        # Try live ORS data first
-        if use_live:
-            lat1 = ROADS[u]['lat']; lng1 = ROADS[u]['lng']
-            lat2 = ROADS[v]['lat']; lng2 = ROADS[v]['lng']
-            live_time, _ = get_live_duration(lat1, lng1, lat2, lng2)
-            live_label   = live_density_from_ors(base, live_time)
-            if live_label:
-                density = live_label
-                live_count += 1
-
         pen = PENALTY_MAP.get(density, 1.0)
-        G[u][v]['weight']  = round(base * pen, 3)
-        density_map[edge]  = density
-
-    if live_count > 0:
-        print(f"✅ Live ORS data used for {live_count} road segments")
+        G[u][v]['weight'] = round(base * pen, 3)
     return G
 
 def get_edge_density(path, density_map):
@@ -336,7 +320,25 @@ def route_query(origin, dest, hour, day_of_week=1, is_holiday=False, is_raining=
     rainy_season = is_rainy_season()
     G_base      = build_base_graph()
     density_map = predict_density(hour, day_of_week, is_holiday, is_raining, is_tgif, rainy_season)
-    G_aware     = build_aware_graph(density_map)
+    G_aware = build_aware_graph(density_map, use_live=False)
+    # Apply live ORS data only to segments on the best path
+    best_path_preview = nx.dijkstra_path(G_aware, origin, dest, weight='weight') 
+    live_count = 0
+    for i in range(len(best_path_preview)-1):
+        u,v  = best_path_preview[i], best_path_preview[i+1]
+        edge = (u,v) if (u,v) in density_map else (v,u)
+        base = G_aware[u][v]['base_weight']
+        live_time, _ = get_live_duration(
+            ROADS[u]['lat'], ROADS[u]['lng'],
+            ROADS[v]['lat'], ROADS[v]['lng'])
+        live_label = live_density_from_ors(base, live_time)
+        if live_label:
+            density_map[edge] = live_label
+            pen = PENALTY_MAP.get(live_label, 1.0)
+            G_aware[u][v]['weight'] = round(base * pen, 3)
+            live_count += 1
+    if live_count > 0:
+    print(f"✅ Live ORS data used for {live_count} route segments")
 
     best_path = nx.dijkstra_path(G_aware, origin, dest, weight='weight')
     best_dens = get_edge_density(best_path, density_map)
