@@ -26,7 +26,7 @@ def get_live_duration(lat1, lng1, lat2, lng2):
             "start": f"{lng1},{lat1}",
             "end":   f"{lng2},{lat2}"
         }
-        r = http_requests.get(url, headers=headers, params=params, timeout=5)
+        r = http_requests.get(url, headers=headers, params=params, timeout=2)
         if r.status_code == 200:
             data = r.json()
             # Duration in seconds → convert to minutes

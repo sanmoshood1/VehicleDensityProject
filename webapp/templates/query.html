@@ -256,7 +256,7 @@ select option{background:var(--navy2);}
       <!-- Loading -->
       <div class="card loading" id="loading">
         <div class="spinner"></div>
-        <p>Predicting density &amp; computing route…</p>
+        <p id="loadingMsg">Predicting density &amp; computing route…</p>
       </div>
 
       <!-- Error -->
@@ -384,7 +384,9 @@ function toggleHoliday() {
 // ── Time display ──────────────────────────────────────────
 function updateTimeDisplay() {
   const h = Math.max(0, Math.min(23, parseInt(document.getElementById('hour').value) || 0));
-  document.getElementById('timeDisplay').textContent = String(h).padStart(2,'0') + ':00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 === 0 ? 12 : h % 12;
+  document.getElementById('timeDisplay').textContent = h12 + ':00 ' + ampm;
   const isPeak = (h >= 6 && h <= 10) || (h >= 16 && h <= 20);
   document.getElementById('peakIndicator').style.display = isPeak ? 'block' : 'none';
 }
@@ -538,6 +540,22 @@ async function submitQuery() {
   btn.disabled = true;
   btn.textContent = 'Computing…';
   showLoading(true);
+
+  // Rotating loading messages
+  const msgs = [
+    'Predicting road density with ML model…',
+    'Fetching live Lagos traffic data…',
+    'Running Dijkstra route optimisation…',
+    'Computing alternative route…',
+    'Preparing your results…'
+  ];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % msgs.length;
+    const el = document.getElementById('loadingMsg');
+    if (el) el.textContent = msgs[msgIdx];
+  }, 1500);
+
   document.getElementById('errorBox').style.display    = 'none';
   document.getElementById('bestCard').style.display    = 'none';
   document.getElementById('altCard').style.display     = 'none';
@@ -609,6 +627,7 @@ async function submitQuery() {
     document.getElementById('errorBox').textContent = 'Network error: ' + err.message;
     document.getElementById('errorBox').style.display = 'block';
   } finally {
+    clearInterval(msgInterval);
     btn.disabled = false;
     btn.textContent = 'Find Best Route →';
     showLoading(false);
