@@ -338,7 +338,7 @@ def route_query(origin, dest, hour, day_of_week=1, is_holiday=False, is_raining=
             G_aware[u][v]['weight'] = round(base * pen, 3)
             live_count += 1
     if live_count > 0:
-    print(f"✅ Live ORS data used for {live_count} route segments")
+        print(f"✅ Live ORS data used for {live_count} route segments")
 
     best_path = nx.dijkstra_path(G_aware, origin, dest, weight='weight')
     best_dens = get_edge_density(best_path, density_map)
